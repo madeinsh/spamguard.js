@@ -1,40 +1,48 @@
 {
     "name": "spamguard.js",
-    "version": "4.4.1",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:madeinhamburg/spamguard.js.git"
-    },
-    "description": "🤖 Protect your email address from being crawled by spam bots.",
+    "version": "26.0.0",
+    "description": "🤖 Protect email addresses and phone numbers from spam bots and scrapers.",
     "keywords": [
         "anti-spam",
         "email",
         "hide email",
+        "jquery-plugin",
         "obfuscate email",
         "obfuscation",
         "obfuscator",
+        "phone",
         "protection",
         "spam"
     ],
     "license": "MIT",
-    "author": "<dev@madein.hamburg>",
-    "homepage": "https://github.com/madeinhamburg/spamguard.js",
+    "author": "<dev@madeinsh.de>",
+    "homepage": "https://github.com/madeinsh/spamguard.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/madeinsh/spamguard.js.git"
+    },
     "bugs": {
-        "url": "https://github.com/madeinhamburg/spamguard.js/issues"
+        "url": "https://github.com/madeinsh/spamguard.js/issues"
     },
     "main": "dist/spamguard.js",
-    "scripts": {
-        "build": "gulp build",
-        "release": "gulp build && npm publish"
+    "module": "dist/spamguard.mjs",
+    "exports": {
+        "import": "./dist/spamguard.mjs",
+        "require": "./dist/spamguard.js"
     },
-    "dependencies": {},
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "rollup -c",
+        "lint": "eslint .",
+        "prepublishOnly": "npm run lint && npm run build"
+    },
     "devDependencies": {
-        "@babel/core": "^7.19.3",
-        "@babel/preset-env": "^7.19.4",
-        "gulp": "^4.0.2",
-        "gulp-babel": "^8.0.0",
-        "gulp-concat": "^2.6.1",
-        "gulp-replace": "^1.1.3",
-        "gulp-uglify": "^3.0.2"
+        "@eslint/js": "^10.0.1",
+        "@rollup/plugin-terser": "^1.0.0",
+        "eslint": "^10.12.0",
+        "globals": "^17.13.0",
+        "rollup": "^4.64.0"
     }
 }

@@ -1,163 +1,241 @@
 <!doctype html>
-<html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>spamguard.js</title>
+        <style>
+            body {
+                max-width: 720px;
+                margin: 40px auto;
+                padding: 0 20px;
+                font-family: system-ui, sans-serif;
+                line-height: 1.5;
+            }
 
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="x-ua-compatible" content="ie=edge">
-	<title>spamguard.js</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+            h2 {
+                margin-top: 6rem;
+            }
 
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha256-YvdLHPgkqJ8DVUxjjnGVlMMJtNimJ6dYkowFFvp4kKs=" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
+            h2:first-of-type {
+                margin-top: 3rem;
+            }
 
-	<script src="https://cdn.jsdelivr.net/npm/spamguard.js/dist/spamguard.js"></script>
-	<!-- <script src="../dist/spamguard.js"></script> -->
-</head>
+            .code,
+            .result {
+                position: relative;
+                padding: 40px 15px 20px;
+                border: 1px solid #ddd;
+            }
 
-<body>
-	<style type="text/css">
-		body {
-			padding: 40px;
-			background-color: #ffffff;
-		}
+            .code {
+                margin-top: 30px;
+                border-bottom: 0;
+                border-radius: 4px 4px 0 0;
+                font: 13px/1.6 ui-monospace, monospace;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
 
-		.container {
-			padding: 0 30px;
-			margin: 0 auto 20px auto;
-			background-color: #ffffff;
-		}
+            .result {
+                background: #f7f7f9;
+                border-radius: 0 0 4px 4px;
+            }
 
-		small {
-			cursor: default;
-		}
+            .code::before,
+            .result::before {
+                position: absolute;
+                top: 12px;
+                left: 15px;
+                font: 700 12px system-ui, sans-serif;
+                color: #959595;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                content: 'Code';
+            }
 
-		.container a,
-		.container span {
-			display: block;
-		}
+            .result::before {
+                content: 'Result';
+            }
 
-		.code {
-			position: relative;
-			padding: 50px 15px 25px 15px;
-			margin: 0;
-			margin-top: 40px;
-			border-style: solid;
-			border-width: 1px 0;
-			background-color: #fff;
-			border-color: #ddd;
-			border-width: 1px;
-			border-bottom: 0;
-			border-radius: 4px 4px 0 0;
-		}
+            [hidden] {
+                display: none !important;
+            }
 
-		.code:after {
-			position: absolute;
-			top: 15px;
-			left: 15px;
-			font-size: 12px;
-			font-weight: 700;
-			color: #959595;
-			text-transform: uppercase;
-			letter-spacing: 1px;
-			content: "Code";
-		}
+            form {
+                display: grid;
+                gap: 12px;
+            }
 
-		.result {
-			position: relative;
-			padding: 50px 15px 25px 15px;
-			background-color: #f7f7f9;
-			border: 1px solid #e1e1e8;
-			border-radius: 0 0 4px 4px;
-			margin-bottom: 40px;
-		}
+            label {
+                display: grid;
+                gap: 4px;
+                font-weight: 600;
+            }
 
-		.result:after {
-			position: absolute;
-			top: 15px;
-			left: 15px;
-			font-size: 12px;
-			font-weight: 700;
-			color: #959595;
-			text-transform: uppercase;
-			letter-spacing: 1px;
-			content: "Result";
-		}
+            label.inline {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 400;
+            }
 
-	</style>
+            input,
+            select,
+            button {
+                font: inherit;
+                padding: 8px 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
 
+            button {
+                justify-self: start;
+                background: #222;
+                color: #fff;
+                border-color: #222;
+                cursor: pointer;
+            }
 
-	<div class="container">
-		<h2>Examples</h2>
+            #copy {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                padding: 4px 10px;
+                font: 12px system-ui, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>spamguard.js</h1>
 
+        <h2>Generator</h2>
 
-		<div class="example">
-			<div class="code"></div>
-			<div class="result">
-				<a href="#" class="obfuscate-it" data-name="mark" data-domain="gmail" data-tld="com" data-mailto="true">
-					This text will be replaced by your mail address.
-				</a>
-			</div>
-		</div>
+        <form id="generator">
+            <label>
+                Email address or phone number
+                <input name="contact" required autocomplete="off" placeholder="mark@gmail.com or +1 808 555 0123" />
+            </label>
+            <label id="protocol">
+                Link type
+                <select name="protocol">
+                    <option value="">Phone call</option>
+                    <option value="sms">SMS</option>
+                    <option value="whatsapp">WhatsApp</option>
+                </select>
+            </label>
+            <label class="inline"><input type="checkbox" name="mailto" checked /> Clickable link</label>
+            <button>Generate code</button>
+        </form>
 
-		<div class="example">
-			<div class="code"></div>
-			<div class="result">
-				<a href="#" class="obfuscate-it" data-name="_mZ1a4.rk9" data-domain="g%m$$a@il" data-tld="c§Xo7m.Y" data-salt="XYZ_.§$%&@Z0123456789" data-mailto="true">
-					This text will be replaced by your mail address.
-				</a>
-			</div>
-		</div>
+        <div id="output" hidden>
+            <div class="code"><button type="button" id="copy">Copy</button><code></code></div>
+            <div class="result"></div>
+        </div>
 
-		<div class="example">
-			<div class="code"></div>
-			<div class="result">
-				<a href="#" class="obfuscate-it" data-name="mark" data-domain="gmail" data-tld="com" data-mailto="true" data-content="true" data-subject="Contact" data-message="Hello. This is an example.">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
-						<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
-					</svg>
-				</a>
-			</div>
-		</div>
+        <h2>Examples</h2>
 
-		<div class="example">
-			<div class="code"></div>
-			<div class="result">
-				<a href="#" class="obfuscate-it" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-mailto="true"></a>
-			</div>
-		</div>
+        <div class="example">
+            <a href="#" class="protect" data-name="mark" data-domain="gmail" data-tld="com" data-mailto>
+                This text will be replaced by your email address.
+            </a>
+        </div>
 
-		<div class="example">
-			<div class="code"></div>
-			<div class="result">
-				<a href="#" class="obfuscate-it" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-protocol="whatsapp" data-message="Hi there!" data-mailto="true"></a>
-			</div>
-		</div>
+        <div class="example">
+            <a href="#" class="protect" data-name="_mZ1a4.rk9" data-domain="g%m$$a@il" data-tld="c§Xo7m.Y" data-salt="XYZ_.§$%&@Z0123456789" data-mailto>
+                This text will be replaced by your email address.
+            </a>
+        </div>
 
-		<div class="example">
-			<div class="code"></div>
-			<div class="result">
-				<span class="obfuscate-it" data-text="H$e__l-[l].o ::W=o)r%&%ld.!" data-salt="§$%&/()=_:;.-[]"></span>
-			</div>
-		</div>
-	</div>
+        <div class="example">
+            <a href="#" class="protect" data-name="mark" data-domain="gmail" data-tld="com" data-mailto data-content data-subject="Contact" data-message="Hello. This is an example.">
+                ✉️ Write me
+            </a>
+        </div>
 
+        <div class="example">
+            <a href="#" class="protect" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-mailto></a>
+        </div>
 
-	<script>
-		document.querySelectorAll(".example").forEach(function(el, i) {
-			var $code = el.querySelectorAll(".result")[0].innerHTML;
+        <div class="example">
+            <a href="#" class="protect" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-protocol="whatsapp" data-message="Hi there!" data-mailto></a>
+        </div>
 
-			$code = $code.trim();
-			$code = $code.replaceAll("<", "&lt;");
-			$code = $code.replaceAll(">", "&gt;");
-			$code = $code.replaceAll("\n", "<br>");
-			$code = $code.replaceAll("\t\t\t\t", "");
-			$code = $code.replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        <div class="example">
+            <span class="protect" data-text="H$e__l-[l].o ::W=o)r%&%ld.!" data-salt="§$%&/()=_:;.-[]"></span>
+        </div>
 
-			el.querySelectorAll(".code")[0].innerHTML = "<code>" + $code + "</code>";
-		});
+        <script id="spamguard">/*! spamguard.js v26.0.0 | MIT License | https://github.com/madeinsh/spamguard.js */
+!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(t="undefined"!=typeof globalThis?globalThis:t||self).spamguard=e()}(this,function(){"use strict";const t=["name","domain","tld","number","text","salt"];let e;const n=(t,e)=>t.getAttribute(`data-${e}`),o=(t,e)=>t.hasAttribute(`data-${e}`)&&"false"!==n(t,e);function a(t){const e="string"==typeof t?document.querySelectorAll(t):t.nodeType?[t]:t;Array.from(e).forEach(r)}function r(a){const r=["name","number","text"].find(t=>a.hasAttribute(`data-${t}`));if(!r)return;const s=n(a,"salt")||"",i=t=>[...n(a,t)||""].filter(t=>!s.includes(t)).join(""),c="name"===r?`${i("name")}@${i("domain")}.${i("tld")}`:i(r),l=o(a,"mailto")&&function(t,e,o){const a=n(t,"message");if("name"===e){const e=[["subject",n(t,"subject")],["body",a]].filter(([,t])=>t).map(([t,e])=>`${t}=${encodeURIComponent(e)}`).join("&");return`mailto:${o}${e?`?${e}`:""}`}if("number"===e){const e=n(t,"protocol")||"tel";return"whatsapp"===e?`https://wa.me/${o.replace(/\D/g,"")}${a?`?text=${encodeURIComponent(a)}`:""}`:`${e}:${o.replace(/\s/g,"")}`}}(a,r,c);t.forEach(t=>a.removeAttribute(`data-${t}`)),o(a,"content")||function(t,n){t.replaceChildren(...[...n].map(t=>{const n=document.createElement("span");return n.className=`s${Math.random().toString(36).slice(2)}`,function(t){e||(e=new CSSStyleSheet,document.adoptedStyleSheets=[...document.adoptedStyleSheets,e]);e.insertRule(t,Math.floor(Math.random()*(e.cssRules.length+1)))}(`.${n.className}::after{content:"\\${t.codePointAt(0).toString(16)}"}`),n}))}(a,c),l&&a.addEventListener("click",t=>{t.preventDefault(),window.location.href=l})}const s=globalThis.jQuery;return s&&s.fn&&(s.fn.spamguard=function(){return a(this),this}),a});
+</script>
+        <script>
+            document.querySelectorAll('.example').forEach((example) => {
+                const code = document.createElement('div')
+                const result = document.createElement('div')
 
-		spamguard(".obfuscate-it");
-	</script>
-</body>
+                code.className = 'code'
+                code.textContent = example.innerHTML.trim().replace(/\s{2,}/g, ' ')
+                result.className = 'result'
+                result.append(...example.childNodes)
+                example.append(code, result)
+            })
 
+            spamguard('.protect')
+
+            // Generator
+            const form = document.getElementById('generator')
+            const output = document.getElementById('output')
+            const SALT = '§$%/()=?!*#~^°|[]{}:;,_+-.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            const random = (items) => items[Math.floor(Math.random() * items.length)]
+            const escape = (text) => text.replace(/[&"<>]/g, (char) => `&#${char.charCodeAt(0)};`)
+
+            form.elements.contact.addEventListener('input', (event) => {
+                event.target.setCustomValidity('')
+                document.getElementById('protocol').hidden = event.target.value.includes('@')
+            })
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault()
+
+                const input = form.elements.contact
+                const value = input.value.trim()
+                const email = value.match(/^([^@]+)@([^@]+)\.([^@.]+)$/)
+
+                if (value.includes('@') && !email) {
+                    input.setCustomValidity('Please enter a valid email address.')
+                    return input.reportValidity()
+                }
+
+                // Salt: 8 random characters that do not occur in the value, mixed in at random positions
+                const salt = [...SALT].filter((char) => !value.includes(char)).sort(() => Math.random() - 0.5).slice(0, 8)
+                const mix = (text) => random(salt) + [...text].map((char) => char + (Math.random() < 0.6 ? random(salt) : '')).join('')
+                const attrs = email ? { name: mix(email[1]), domain: mix(email[2]), tld: mix(email[3]) } : { number: mix(value) }
+
+                attrs.salt = salt.join('')
+                if (!email && form.elements.protocol.value) attrs.protocol = form.elements.protocol.value
+
+                const tag = form.elements.mailto.checked ? 'a' : 'span'
+                const data = Object.entries(attrs).map(([key, text]) => `data-${key}="${escape(text)}"`)
+                const html = `<${tag}${tag === 'a' ? ' href="#"' : ''} class="spamguard" ${data.join(' ')}${tag === 'a' ? ' data-mailto' : ''}></${tag}>`
+
+                output.querySelector('code').textContent = [
+                    html,
+                    '',
+                    '<script src="https://cdn.jsdelivr.net/npm/spamguard.js/dist/spamguard.js"><\/script>',
+                    "<script>spamguard('.spamguard')<\/script>",
+                ].join('\n')
+
+                const result = output.querySelector('.result')
+                result.innerHTML = html
+                spamguard(result.firstElementChild)
+                output.hidden = false
+            })
+
+            document.getElementById('copy').addEventListener('click', async (event) => {
+                await navigator.clipboard.writeText(output.querySelector('code').textContent)
+                event.target.textContent = 'Copied!'
+                setTimeout(() => (event.target.textContent = 'Copy'), 1500)
+            })
+        </script>
+    </body>
 </html>

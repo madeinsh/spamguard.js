@@ -1,92 +1,106 @@
 # spamguard.js
 
+Protect email addresses and phone numbers from spam bots and scrapers. No dependencies, ~1 KB gzipped.
 
+-   The value is split into salted `data-*` attributes, so no `name@domain.tld` pattern appears in your HTML.
+-   After initialization these attributes are removed. The value is rendered character by character as hex-escaped CSS pseudo-elements, in random order, inside a constructed stylesheet. It never appears as text in the DOM, `innerText` or a `<style>` tag.
+-   Links (`mailto:`, `tel:`, …) are only built on click.
 
+[Demo](https://madeinsh.github.io/spamguard.js/example/index.html)
 
+## Installation
 
-### Installation
 ```bash
 npm install spamguard.js
-yarn add spamguard.js
 ```
 
-
-
-
-
-### Usage
-```javascript
-spamguard(selector);
-```
+Or via CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/spamguard.js/dist/spamguard.js"></script>
-<a href="#" class="obfuscate-it" data-name="mark" data-domain="gmail" data-tld="com" data-mailto="true"></a>
-<script>
-	spamguard(".obfuscate-it");
-</script>
+<script src="https://cdn.jsdelivr.net/npm/spamguard.js@5/dist/spamguard.js"></script>
 ```
 
-[Demo](https://madeinhamburg.github.io/spamguard.js/example/index.html)
-
-
-
-
-
-### Options
-| Attribute | Type | Default | Description |
-|---|---|---|---|
-| `data-name` | `string` | | Everything before the `@` of your email address |
-| `data-domain` | `string` | | Domain name without extension |
-| `data-tld` | `string` | | Extension without `.` |
-| `data-salt` | `string` | | Additional characters for confusion, which are removed |
-| `data-number` | `string` | | You can add letters and special characters for obfuscation (see example) |
-| `data-mailto` | `boolean` | false | Creates a `mailto:`-link |
-| `data-content` | `boolean` | false | When `true`, your own content will be kept. Otherwise it returns the email address. |
-| `data-subject` | `string` | | Set a custom subject for `mailto:`-link |
-| `data-message` | `string` | | Set a custom message for `mailto:`-link |
-| `data-text` | `string` | | Obfuscate a custom string |
-| `data-protocol` | `string` | tel | Set the protocol on `data-number`: `whatsapp`, `tel`, `sms`  |
-| `data-align-content` | `string` | left | Correspond to justify-content |
-
-
-
-
-
-### Example with custom content
+## Usage
 
 ```html
-<a href="#" class="obfuscate-it" data-name="mark" data-domain="gmail" data-tld="com" data-mailto="true" data-content="true">
-	<i class="fa fa-heart"></i>
+<a href="#" class="protect" data-name="mark" data-domain="gmail" data-tld="com" data-mailto></a>
+```
+
+`spamguard()` accepts a selector, an element, a NodeList, an array or a jQuery object.
+
+```js
+// Script tag (global)
+spamguard('.protect')
+
+// ES module
+import spamguard from 'spamguard.js'
+spamguard('.protect')
+
+// CommonJS
+const spamguard = require('spamguard.js')
+spamguard('.protect')
+
+// jQuery (load spamguard.js after jQuery)
+$('.protect').spamguard()
+```
+
+Calling it again on the same elements is safe; already protected elements are skipped.
+
+## Attributes
+
+| Attribute       | Description                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `data-name`     | Everything before the `@` of the email address                                             |
+| `data-domain`   | Domain name without extension                                                              |
+| `data-tld`      | Extension without `.`                                                                      |
+| `data-number`   | Phone number                                                                               |
+| `data-text`     | Any other text                                                                             |
+| `data-salt`     | Characters that are removed from the values above, so you can mix them in for confusion    |
+| `data-mailto`   | Makes the element clickable (`mailto:`, `tel:`, …)                                         |
+| `data-protocol` | Protocol for `data-number`: `tel` (default), `sms`, `whatsapp` or any other URI scheme     |
+| `data-subject`  | Subject for `mailto:` links                                                                |
+| `data-message`  | Body for `mailto:` links, text for WhatsApp links                                          |
+| `data-content`  | Keeps your own content (e.g. an icon) instead of rendering the value                       |
+
+Boolean attributes (`data-mailto`, `data-content`) are enabled when present, unless set to `"false"`.
+
+## Examples
+
+```html
+<!-- Email with salt: renders mark@gmail.com -->
+<a href="#" class="protect" data-name="_mZ1a4.rk9" data-domain="g%m$$a@il" data-tld="c§Xo7m.Y" data-salt="XYZ_.§$%&@Z0123456789" data-mailto></a>
+
+<!-- Own content with subject and message -->
+<a href="#" class="protect" data-name="mark" data-domain="gmail" data-tld="com" data-mailto data-content data-subject="Contact" data-message="Hello!">
+    <i class="icon-mail"></i>
 </a>
-<script>
-	spamguard(".obfuscate-it");
-</script>
+
+<!-- Phone number: renders +1 808 555 0123 -->
+<a href="#" class="protect" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-mailto></a>
+
+<!-- WhatsApp -->
+<a href="#" class="protect" data-number="+1 808 555 0123" data-protocol="whatsapp" data-message="Hi there!" data-mailto></a>
+
+<!-- Any text: renders Hello World! -->
+<span class="protect" data-text="H$e__l-[l].o ::W=o)r%&%ld.!" data-salt="§$%&/()=_:;.-[]"></span>
 ```
 
-### Example with phone number
+Use `<a href="#">` or `<button>` for clickable elements so they work with the keyboard. Rendered values inherit the surrounding styles, so you can use `text-align` etc. as usual. Note that rendered values cannot be selected or copied.
 
-```html
-<a href="#" class="obfuscate-it" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-mailto="true"></a>
-<script>
-	spamguard(".obfuscate-it");
-</script>
-```
+## Browser support
 
-### Example with WhatsApp number
+All current browsers (requires [constructable stylesheets](https://caniuse.com/mdn-api_document_adoptedstylesheets): Chrome 73+, Firefox 101+, Safari 16.4+).
 
-```html
-<a href="#" class="obfuscate-it" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-protocol="whatsapp" data-message="Hi there!" data-mailto="true"></a>
-<script>
-	spamguard(".obfuscate-it");
-</script>
-```
+## Upgrading from 4.x
 
-### Example with a custom text
+-   `data-align-content` was removed. Values are now rendered inline, so use CSS (`text-align`) instead.
+-   `data-mailto` and `data-content` no longer need a value: `data-mailto` is enough.
+-   The `data-spamguard` marker attribute is gone, and the source attributes (`data-name`, `data-number`, `data-salt`, …) are removed after initialization.
 
-```html
-<span class="obfuscate-it" data-text="H$e__l-[l].o ::W=o)r%&%ld.!" data-salt="§$%&/()=_:;.-[]"></span>
-<script>
-	spamguard(".obfuscate-it");
-</script>
+## Development
+
+```bash
+npm install
+npm run lint
+npm run build
 ```

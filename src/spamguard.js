@@ -1,131 +1,100 @@
-/*!
-*  spamguard.js v4.4.1
-*  🤖 Protect your email address from being crawled by spam bots.
-*  https://github.com/madeinhamburg/spamguard.js
-*  Licensed under the MIT license.
-*/
+const OPTIONS = ['name', 'domain', 'tld', 'number', 'text', 'salt']
 
-function spamguard($selector) {
-	var converter = (function($string, $to) {
-			var $r = "";
-			for (var s = 0; s < $string.length; s++) {
-				if ($to == "hex") {
-					$r += "&#x" + $string.charCodeAt(s).toString(16) + ";";
-				} else {
-					$r += "\\" + $string.charCodeAt(s).toString(16);
-				}
-			}
+let sheet
 
-			return $r;
-		}),
-		desalt = (function($el, $attr) {
-			var $value = $el.getAttribute($attr);
+const data = (el, name) => el.getAttribute(`data-${name}`)
+const flag = (el, name) => el.hasAttribute(`data-${name}`) && data(el, name) !== 'false'
 
-			if (typeof($el.getAttribute("data-salt")) === "string") {
-				var $salt = $el.getAttribute("data-salt");
-				for (var s = 0; s < $salt.length; s++) {
-					if (/^[A-Za-z0-9]$/.test($salt[s])) {
-						$value = $value.replace(new RegExp($salt[s], "g"), "");
-					} else {
-						$value = $value.replace(new RegExp("\\" + $salt[s], "g"), "");
-					}
-				}
-			}
+/**
+ * Protects email addresses, phone numbers and texts from bots and scrapers.
+ *
+ * @param {string|Element|ArrayLike<Element>} target CSS selector, element, NodeList, array or jQuery object
+ */
+export default function spamguard(target) {
+    const elements = typeof target === 'string' ? document.querySelectorAll(target) : target.nodeType ? [target] : target
 
-			return $value;
-		}),
-		$cssTextNode = "",
-		$elements = document.querySelectorAll($selector);
+    Array.from(elements).forEach(protect)
+}
 
+function protect(el) {
+    const type = ['name', 'number', 'text'].find((name) => el.hasAttribute(`data-${name}`))
 
-	for (var i = 0; i < $elements.length; i++) {
-		var $el = $elements[i],
-			$value,
-			$html = "",
-			$cssClassname = "spamguard-" + (Math.random().toString(36).substring(2, 7) + Math.random().toString(36).substring(2, 7)),
-			$mailto = (typeof($el.getAttribute("data-mailto")) === "string" && $el.getAttribute("data-mailto") !== "" && $el.getAttribute("data-mailto") != "false") ? true : false,
-			$content = (typeof($el.getAttribute("data-content")) === "string" && $el.getAttribute("data-content") !== "" && $el.getAttribute("data-content") != "false") ? true : false,
-			$alignContent = (typeof($el.getAttribute("data-align-content")) === "string" && $el.getAttribute("data-align-content") !== "") ? $el.getAttribute("data-align-content") : "left";
+    // Nothing to do, or already protected (the source attributes are gone)
+    if (!type) return
 
+    const salt = data(el, 'salt') || ''
+    const read = (name) => [...(data(el, name) || '')].filter((char) => !salt.includes(char)).join('')
+    const value = type === 'name' ? `${read('name')}@${read('domain')}.${read('tld')}` : read(type)
+    const href = flag(el, 'mailto') && link(el, type, value)
 
-		if (!$el.hasAttribute("data-spamguard")) {
-			$el.setAttribute("data-spamguard", true);
+    // Leave no trace of the value in the DOM
+    OPTIONS.forEach((name) => el.removeAttribute(`data-${name}`))
 
-			if ($content == false) {
-				if (typeof($el.getAttribute("data-name")) === "string" && typeof($el.getAttribute("data-domain")) === "string" && typeof($el.getAttribute("data-tld")) === "string") {
-					$value = desalt($el, "data-name") + "@" + desalt($el, "data-domain") + "." + desalt($el, "data-tld");
-				}
+    if (!flag(el, 'content')) render(el, value)
 
-				if (typeof($el.getAttribute("data-number")) === "string") {
-					$value = desalt($el, "data-number");
-				}
+    if (href) {
+        el.addEventListener('click', (event) => {
+            event.preventDefault()
+            window.location.href = href
+        })
+    }
+}
 
-				if (typeof($el.getAttribute("data-text")) === "string" && typeof($el.getAttribute("data-salt")) === "string") {
-					$value = desalt($el, "data-text");
-				}
+function link(el, type, value) {
+    const message = data(el, 'message')
 
-				var $valuerRversed = $value.split("").reverse().join("");
+    if (type === 'name') {
+        const query = [
+            ['subject', data(el, 'subject')],
+            ['body', message],
+        ]
+            .filter(([, text]) => text)
+            .map(([key, text]) => `${key}=${encodeURIComponent(text)}`)
+            .join('&')
 
+        return `mailto:${value}${query ? `?${query}` : ''}`
+    }
 
-				$valuerRversed.split("").forEach(function($v, n) {
-					$html += "<span>" + ($v == " " ? "&nbsp;" : "") + "</span>";
-					$cssTextNode += "." + $cssClassname + ">span span:nth-child(" + (n + 1) + "):after{content:\"" + converter($v) + "\"}";
-				});
+    if (type === 'number') {
+        const protocol = data(el, 'protocol') || 'tel'
 
-				$el.innerHTML = "<span>" + $html + "</span>";
-				$el.classList.add($cssClassname);
-				$cssTextNode += "." + $cssClassname + ">span{display:flex!important;flex-flow:row-reverse;flex-wrap:wrap-reverse;justify-content:" + $alignContent + ";}";
-			}
+        if (protocol === 'whatsapp') {
+            return `https://wa.me/${value.replace(/\D/g, '')}${message ? `?text=${encodeURIComponent(message)}` : ''}`
+        }
 
+        return `${protocol}:${value.replace(/\s/g, '')}`
+    }
+}
 
-			if ($mailto == true) {
-				$el.addEventListener("click", function(e) {
-					e.preventDefault();
+// Every character becomes an empty <span> whose content only exists as a hex-escaped CSS pseudo-element
+function render(el, value) {
+    el.replaceChildren(
+        ...[...value].map((char) => {
+            const span = document.createElement('span')
 
-					if (typeof(this.getAttribute("data-name")) === "string" && typeof(this.getAttribute("data-domain")) === "string" && typeof(this.getAttribute("data-tld")) === "string") {
-						var $href = "mailto:" +
-							desalt(this, "data-name") +
-							"@" + desalt(this, "data-domain") +
-							"." + desalt(this, "data-tld") +
-							"?";
+            span.className = `s${Math.random().toString(36).slice(2)}`
+            insertRule(`.${span.className}::after{content:"\\${char.codePointAt(0).toString(16)}"}`)
 
-						if (typeof(this.getAttribute("data-subject")) === "string" && this.getAttribute("data-subject") !== "" && this.getAttribute("data-subject") != "false") {
-							$href += "&subject=" + encodeURIComponent(this.getAttribute("data-subject"));
-						}
-						if (typeof(this.getAttribute("data-message")) === "string" && this.getAttribute("data-message") !== "" && this.getAttribute("data-message") != "false") {
-							$href += "&body=" + encodeURIComponent(this.getAttribute("data-message"));
-						}
-					}
+            return span
+        })
+    )
+}
 
-					if (typeof(this.getAttribute("data-number")) === "string") {
-						if (typeof(this.getAttribute("data-protocol")) === "string" && this.getAttribute("data-protocol") !== "") {
-							if (this.getAttribute("data-protocol") === "whatsapp") {
-								var $href = "https://wa.me/" + desalt(this, "data-number").replace(new RegExp("\\+| ", "g"), "");
+// Rules live in a constructed stylesheet (no <style> text in the DOM, CSP-friendly) in random order
+function insertRule(rule) {
+    if (!sheet) {
+        sheet = new CSSStyleSheet()
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
+    }
 
-								if (typeof(this.getAttribute("data-message")) === "string" && this.getAttribute("data-message") !== "" && this.getAttribute("data-message") != "false") {
-									$href += "?text=" + encodeURIComponent(this.getAttribute("data-message"));
-								}
+    sheet.insertRule(rule, Math.floor(Math.random() * (sheet.cssRules.length + 1)))
+}
 
-							} else {
-								var $href = this.getAttribute("data-protocol") + ":" + desalt(this, "data-number");
-							}
-						} else {
-							var $href = "tel:" + desalt(this, "data-number")
-						}
-					}
+const jQuery = globalThis.jQuery
 
-					if ($href) {
-						window.location.href = $href;
-					}
-				}, false);
-			}
-		}
-	}
-
-
-	if ($cssTextNode) {
-		var $styleEl = document.createElement("style");
-		$styleEl.appendChild(document.createTextNode($cssTextNode));
-		document.getElementsByTagName("body")[0].appendChild($styleEl);
-	}
+if (jQuery && jQuery.fn) {
+    jQuery.fn.spamguard = function () {
+        spamguard(this)
+        return this
+    }
 }
