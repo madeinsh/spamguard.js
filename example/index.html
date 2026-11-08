@@ -111,20 +111,32 @@
 
         <h2>Generator</h2>
 
+        <p>Runs entirely in your browser, nothing is sent anywhere.</p>
+
         <form id="generator">
             <label>
-                Email address or phone number
-                <input name="contact" required autocomplete="off" placeholder="mark@gmail.com or +1 808 555 0123" />
+                Email address, phone number or text
+                <input name="contact" required autocomplete="off" placeholder="name@example.com or +1 555 0100" />
             </label>
-            <label id="protocol">
-                Link type
-                <select name="protocol">
-                    <option value="">Phone call</option>
+            <label>
+                Link
+                <select name="link">
+                    <option value="mailto">Email</option>
+                    <option value="tel">Phone call</option>
                     <option value="sms">SMS</option>
                     <option value="whatsapp">WhatsApp</option>
+                    <option value="">No link</option>
                 </select>
             </label>
-            <label class="inline"><input type="checkbox" name="mailto" checked /> Clickable link</label>
+            <label data-for="mailto">
+                Subject
+                <input name="subject" autocomplete="off" />
+            </label>
+            <label data-for="mailto whatsapp">
+                Message
+                <input name="message" autocomplete="off" />
+            </label>
+            <label class="inline"><input type="checkbox" name="reveal" /> Show only after a click (no pixels for screenshot bots)</label>
             <button>Generate code</button>
         </form>
 
@@ -136,37 +148,31 @@
         <h2>Examples</h2>
 
         <div class="example">
-            <a href="#" class="protect" data-name="mark" data-domain="gmail" data-tld="com" data-mailto>
-                This text will be replaced by your email address.
-            </a>
+            <a href="#" data-spamguard="zN4CvIgLQ+6HZgRhe8DYO52YT9HdA/BsdyyNnwiGUexv3ItrDJiYGj4=" aria-label="Send email">Please enable JavaScript to see the email address.</a>
         </div>
 
         <div class="example">
-            <a href="#" class="protect" data-name="_mZ1a4.rk9" data-domain="g%m$$a@il" data-tld="c§Xo7m.Y" data-salt="XYZ_.§$%&@Z0123456789" data-mailto>
-                This text will be replaced by your email address.
-            </a>
+            <a href="#" data-spamguard="pYPkerVgpIQipB7ybmmF2WIERzQ9TQIE9I7qcWxJw5NRhzvZg7u9HfSMN/QFliQGrBwILVYZS9Kj7hKHNz4Qql53fjSK2qXvfg3xvlzKXx61938=" data-content>✉️ Write me</a>
         </div>
 
         <div class="example">
-            <a href="#" class="protect" data-name="mark" data-domain="gmail" data-tld="com" data-mailto data-content data-subject="Contact" data-message="Hello. This is an example.">
-                ✉️ Write me
-            </a>
+            <a href="#" data-spamguard="21B8aV9xM7p/2/romDVPEywFeSgH30KNnJ+sy1XQPMWNq3Z3Sw==" aria-label="Call"></a>
         </div>
 
         <div class="example">
-            <a href="#" class="protect" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-mailto></a>
+            <a href="#" data-spamguard="oUb/w4N2y/1QtRFAQS8D5xoYSXFSdZhqKlcOVd5pf929UuLgc+xqun7xMsYk2NAgsvdzdfTx1EYQWHIJJ+vs" aria-label="Open WhatsApp"></a>
         </div>
 
         <div class="example">
-            <a href="#" class="protect" data-number="_+1 $&80=8 :555;; 01-))23" data-salt="§$%&/()=_:;.-[]" data-protocol="whatsapp" data-message="Hi there!" data-mailto></a>
+            <a href="#" data-spamguard="lAwJh6KCEy/Q2sWofA+QCmVpkfyRGER/jwcbK3z72WxoivzvNw==" data-reveal>Show phone number</a>
         </div>
 
         <div class="example">
-            <span class="protect" data-text="H$e__l-[l].o ::W=o)r%&%ld.!" data-salt="§$%&/()=_:;.-[]"></span>
+            <span data-spamguard="hZ55bxygX26eUrAEemkH4z7W"></span>
         </div>
 
-        <script id="spamguard">/*! spamguard.js v26.0.0 | MIT License | https://github.com/madeinsh/spamguard.js */
-!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(t="undefined"!=typeof globalThis?globalThis:t||self).spamguard=e()}(this,function(){"use strict";const t=["name","domain","tld","number","text","salt"];let e;const n=(t,e)=>t.getAttribute(`data-${e}`),o=(t,e)=>t.hasAttribute(`data-${e}`)&&"false"!==n(t,e);function a(t){const e="string"==typeof t?document.querySelectorAll(t):t.nodeType?[t]:t;Array.from(e).forEach(r)}function r(a){const r=["name","number","text"].find(t=>a.hasAttribute(`data-${t}`));if(!r)return;const s=n(a,"salt")||"",i=t=>[...n(a,t)||""].filter(t=>!s.includes(t)).join(""),c="name"===r?`${i("name")}@${i("domain")}.${i("tld")}`:i(r),l=o(a,"mailto")&&function(t,e,o){const a=n(t,"message");if("name"===e){const e=[["subject",n(t,"subject")],["body",a]].filter(([,t])=>t).map(([t,e])=>`${t}=${encodeURIComponent(e)}`).join("&");return`mailto:${o}${e?`?${e}`:""}`}if("number"===e){const e=n(t,"protocol")||"tel";return"whatsapp"===e?`https://wa.me/${o.replace(/\D/g,"")}${a?`?text=${encodeURIComponent(a)}`:""}`:`${e}:${o.replace(/\s/g,"")}`}}(a,r,c);t.forEach(t=>a.removeAttribute(`data-${t}`)),o(a,"content")||function(t,n){t.replaceChildren(...[...n].map(t=>{const n=document.createElement("span");return n.className=`s${Math.random().toString(36).slice(2)}`,function(t){e||(e=new CSSStyleSheet,document.adoptedStyleSheets=[...document.adoptedStyleSheets,e]);e.insertRule(t,Math.floor(Math.random()*(e.cssRules.length+1)))}(`.${n.className}::after{content:"\\${t.codePointAt(0).toString(16)}"}`),n}))}(a,c),l&&a.addEventListener("click",t=>{t.preventDefault(),window.location.href=l})}const s=globalThis.jQuery;return s&&s.fn&&(s.fn.spamguard=function(){return a(this),this}),a});
+        <script id="spamguard">/*! spamguard.js v27.0.0 | MIT License | https://github.com/madeinsh/spamguard.js */
+!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(t="undefined"!=typeof globalThis?globalThis:t||self).spamguard=e()}(this,function(){"use strict";const t={display:"inline","text-decoration":"inherit","transition-property":"color, font, letter-spacing, line-height, text-decoration, text-underline-offset, text-transform","transition-duration":"1ms","transition-behavior":"allow-discrete"},e=["transitionrun","transitionstart","transitioncancel","transitionend"],n=["javascript","vbscript","data"];let o;function i(t="[data-spamguard]"){const e="string"==typeof t?document.querySelectorAll(t):t.nodeType?[t]:t;Array.from(e).forEach(r)}function r(t){const e=t.getAttribute("data-spamguard"),n=e&&t.isConnected&&h(e);if(!n)return;t.removeAttribute("data-spamguard");const o=n.link.length>0,i=n.text.length>0&&!l(t,"content");let r=i&&l(t,"reveal");i&&!r&&a(t,e),(o||r)&&t.addEventListener("click",n=>{if(n.preventDefault(),n.isTrusted)if(r)r=!1,t.hasAttribute("aria-label")||t.setAttribute("aria-label",t.textContent.trim()),a(t,e);else if(o){let t="";for(const n of u(h(e).link))t+=n;window.location.href=t}})}function a(n,o){const i=document.createElement("canvas"),r=getComputedStyle(n),a=()=>s(i,o);f(i,t,"important"),f(i,{height:"auto","max-width":"100%"}),n.replaceChildren(i),a(),e.forEach(t=>i.addEventListener(t,e=>{e.stopPropagation(),"transitionend"===t&&a()})),document.fonts.load(`${r.fontStyle} ${r.fontWeight} ${r.fontSize} ${r.fontFamily}`).then(a,()=>{}),c(new WeakRef(i),o),new ResizeObserver(()=>requestAnimationFrame(a)).observe(i)}function c(t,e){matchMedia(`(resolution: ${devicePixelRatio}dppx)`).addEventListener("change",()=>{const n=t.deref();n?.isConnected&&(s(n,e),c(t,e))},{once:!0})}function s(t,e){const n=getComputedStyle(t),i=devicePixelRatio,r=parseFloat(n.fontSize)*i;if(!(r>0))return;const a=`${n.fontStyle} ${n.fontWeight} ${r}px ${n.fontFamily}`,c=(parseFloat(n.letterSpacing)||0)*i,s=parseFloat(n.lineHeight)*i,l=u(h(e).text,n.textTransform),p=d(l.keys()),m=Math.ceil(r/4),g=[];let x;o||(o=document.createElement("canvas"));const y=o.getContext("2d");y.font=a,p.forEach(t=>{x=y.measureText(l[t]),g[t]=x.width+c});const b=Math.ceil(x.fontBoundingBoxAscent),C=Math.ceil(x.fontBoundingBoxDescent),v=s?(s-b-C)/2:0,M=function(t,e,n,o){if(!t.textDecorationLine.includes("underline"))return null;const i=parseFloat(t.textUnderlineOffset),r=parseFloat(t.textDecorationThickness)*o;return{top:Math.round(n+(Number.isNaN(i)?e/8:i*o)),thickness:Math.max(1,Math.round(r||e/16))}}(n,r,b,i),w=M?Math.max(0,M.top+M.thickness-b-C):0,A=[];let E=0;g.forEach((t,e)=>{A[e]=m+E,E+=t}),t.width=Math.ceil(E)+2*m,t.height=b+C+w,o.width=Math.ceil(Math.max(...g))+2*m+1,o.height=b+C,y.font=a,y.fillStyle=n.color;const S=t.getContext("2d");p.forEach(t=>{const e=Math.floor(A[t]);y.clearRect(0,0,o.width,o.height),y.fillText(l[t],m+A[t]-e,b),S.drawImage(o,e-m,0)}),M&&(S.fillStyle=n.textDecorationColor,S.fillRect(m,M.top,E,M.thickness)),f(t,{width:t.width/i+"px",margin:[v,-m,v-w].map(t=>t/i+"px").join(" "),"vertical-align":-(C+v)/i+"px"})}function l(t,e){return t.hasAttribute(`data-${e}`)&&"false"!==t.getAttribute(`data-${e}`)}function f(t,e,n){Object.entries(e).forEach(([e,o])=>t.style.setProperty(e,o,n))}function u(t,e){const n=[];return d(t.keys()).forEach(o=>{const i=String.fromCodePoint(t[o]);n[o]="uppercase"===e?i.toUpperCase():"lowercase"===e?i.toLowerCase():i}),n}function d(t){return[...t].map(t=>[Math.random(),t]).sort(([t],[e])=>t-e).map(([,t])=>t)}function h(t){let e;try{e=[...atob(t)].map(t=>t.charCodeAt(0))}catch{return}const n=x(e.splice(0,4)),o=e.map(t=>t^n()),i=o.pop(),r=[];let a=0;o.forEach(t=>{a=a<<7|127&t,t<128&&(r.push(a),a=0)});const[c,...s]=r;if(!(i===g(o)&&c>=0&&c<=s.length&&s.every(t=>t>=0&&t<=1114111)))return;const l=s.slice(0,c);return{link:p(l)?[]:l,text:s.slice(c)}}function p(t){const e=t.slice(0,Math.max(t.indexOf(58),0)).filter(t=>t>32);return n.includes(String.fromCodePoint(...e).toLowerCase())}function m(t){const e=[127&t];for(;t>>>=7;)e.unshift(127&t|128);return e}function g(t){return 255&t.reduce((t,e)=>t+e,0)}function x(t){let e=t.reduce((t,e)=>t<<8|e,0)||1;return()=>(e^=e<<13,e^=e>>>17,e^=e<<5,e>>>24)}i.encode=function(t="",e=""){const n=[...e,...t.normalize("NFC")].map(t=>t.codePointAt(0)),o=[[...e].length,...n].flatMap(m),i=Array.from({length:4},()=>Math.floor(256*Math.random())),r=x(i);return o.push(g(o)),btoa(String.fromCharCode(...i,...o.map(t=>t^r())))};const y=globalThis.jQuery;return y&&y.fn&&(y.fn.spamguard=function(){return i(this),this}),i});
 </script>
         <script>
             document.querySelectorAll('.example').forEach((example) => {
@@ -180,49 +186,82 @@
                 example.append(code, result)
             })
 
-            spamguard('.protect')
+            spamguard()
 
             // Generator
             const form = document.getElementById('generator')
             const output = document.getElementById('output')
-            const SALT = '§$%/()=?!*#~^°|[]{}:;,_+-.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            const random = (items) => items[Math.floor(Math.random() * items.length)]
-            const escape = (text) => text.replace(/[&"<>]/g, (char) => `&#${char.charCodeAt(0)};`)
+            const PHONE = ['tel', 'sms', 'whatsapp']
+            const LABELS = { mailto: 'Send email', tel: 'Call', sms: 'Send SMS', whatsapp: 'Open WhatsApp' }
+            const query = (params) => {
+                const text = Object.entries(params)
+                    .filter(([, value]) => value)
+                    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                    .join('&')
+
+                return text && `?${text}`
+            }
+
+            // Shows only the fields that apply to the selected link
+            const update = () => form.querySelectorAll('[data-for]').forEach((label) => (label.hidden = !label.dataset.for.split(' ').includes(form.elements.link.value)))
 
             form.elements.contact.addEventListener('input', (event) => {
+                const value = event.target.value
+                const kind = value.includes('@') ? 'mailto' : /^[\d\s()+\-./]+$/.test(value) ? 'tel' : ''
+                const link = form.elements.link
+
                 event.target.setCustomValidity('')
-                document.getElementById('protocol').hidden = event.target.value.includes('@')
+                // Guess the link type only until the user picks one
+                if (!link.dataset.picked && (kind === 'tel' ? !PHONE.includes(link.value) : link.value !== kind)) link.value = kind
+                update()
             })
+            form.elements.link.addEventListener('change', (event) => {
+                event.target.dataset.picked = 'true'
+                update()
+            })
+            update()
 
             form.addEventListener('submit', (event) => {
                 event.preventDefault()
 
                 const input = form.elements.contact
                 const value = input.value.trim()
-                const email = value.match(/^([^@]+)@([^@]+)\.([^@.]+)$/)
+                const link = form.elements.link.value
+                const reveal = form.elements.reveal.checked
+                const number = value.replace(/[^\d+]/g, '')
+                const { subject, message } = form.elements
 
-                if (value.includes('@') && !email) {
+                if (link === 'mailto' && !/^[^@\s]+@[^@\s]+\.[^@\s.]+$/.test(value)) {
                     input.setCustomValidity('Please enter a valid email address.')
                     return input.reportValidity()
                 }
 
-                // Salt: 8 random characters that do not occur in the value, mixed in at random positions
-                const salt = [...SALT].filter((char) => !value.includes(char)).sort(() => Math.random() - 0.5).slice(0, 8)
-                const mix = (text) => random(salt) + [...text].map((char) => char + (Math.random() < 0.6 ? random(salt) : '')).join('')
-                const attrs = email ? { name: mix(email[1]), domain: mix(email[2]), tld: mix(email[3]) } : { number: mix(value) }
+                if (PHONE.includes(link) && !/\d/.test(number)) {
+                    input.setCustomValidity('Please enter a valid phone number.')
+                    return input.reportValidity()
+                }
 
-                attrs.salt = salt.join('')
-                if (!email && form.elements.protocol.value) attrs.protocol = form.elements.protocol.value
-
-                const tag = form.elements.mailto.checked ? 'a' : 'span'
-                const data = Object.entries(attrs).map(([key, text]) => `data-${key}="${escape(text)}"`)
-                const html = `<${tag}${tag === 'a' ? ' href="#"' : ''} class="spamguard" ${data.join(' ')}${tag === 'a' ? ' data-mailto' : ''}></${tag}>`
+                const href = {
+                    mailto: `mailto:${value}${query({ subject: subject.value, body: message.value })}`,
+                    tel: `tel:${number}`,
+                    sms: `sms:${number}`,
+                    whatsapp: `https://wa.me/${number.replace('+', '')}${query({ text: message.value })}`,
+                }[link]
+                const tag = link ? 'a' : reveal ? 'button' : 'span'
+                const attrs = [
+                    tag === 'a' && 'href="#"',
+                    tag === 'button' && 'type="button"',
+                    `data-spamguard="${spamguard.encode(value, href)}"`,
+                    reveal ? 'data-reveal' : link && `aria-label="${LABELS[link]}"`,
+                ].filter(Boolean)
+                const placeholder = reveal ? `Show ${link === 'mailto' ? 'email address' : link ? 'phone number' : 'text'}` : ''
+                const html = `<${tag} ${attrs.join(' ')}>${placeholder}</${tag}>`
 
                 output.querySelector('code').textContent = [
                     html,
                     '',
-                    '<script src="https://cdn.jsdelivr.net/npm/spamguard.js/dist/spamguard.js"><\/script>',
-                    "<script>spamguard('.spamguard')<\/script>",
+                    '<script src="https://cdn.jsdelivr.net/npm/spamguard.js@27/dist/spamguard.js"><\/script>',
+                    '<script>spamguard()<\/script>',
                 ].join('\n')
 
                 const result = output.querySelector('.result')

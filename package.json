@@ -1,6 +1,6 @@
 {
     "name": "spamguard.js",
-    "version": "26.0.0",
+    "version": "27.0.0-beta.1",
     "description": "🤖 Protect email addresses and phone numbers from spam bots and scrapers.",
     "keywords": [
         "anti-spam",
@@ -36,13 +36,14 @@
     "scripts": {
         "build": "rollup -c",
         "lint": "eslint .",
-        "prepublishOnly": "npm run lint && npm run build"
+        "test": "node --test",
+        "prepublishOnly": "npm run lint && npm test && npm run build"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "@rollup/plugin-terser": "^1.0.0",
-        "eslint": "^10.12.0",
-        "globals": "^17.13.0",
-        "rollup": "^4.64.0"
+        "@rollup/plugin-terser": "^1.0.2",
+        "eslint": "^10.14.0",
+        "globals": "^17.14.0",
+        "rollup": "^4.68.0"
     }
 }

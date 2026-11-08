@@ -27,7 +27,7 @@ const inlineExample = {
 }
 
 export default {
-    input: 'src/spamguard.js',
+    input: 'src/spamguard.mjs',
     plugins: [licenseYear, terser()],
     output: [
         { file: pkg.module, format: 'es', banner },
